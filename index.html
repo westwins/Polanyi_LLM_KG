@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polanyi 시스템: 인간 수준의 이해를 향한 뉴로심볼릭 여정</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Earth -->
+    <!-- Application Structure Plan: A single-page application with a fixed left-hand navigation sidebar and a dynamic main content area. This structure provides a clear, logical flow for a presentation while allowing non-linear exploration. The main sections are: Introduction, Framework, Pipeline, 11 Heuristics, Experiments (with sub-sections), and Conclusion. This was chosen to break down the dense paper into digestible, thematically-grouped modules, enhancing user understanding and engagement through targeted interactivity within each section. -->
+    <!-- Visualization & Content Choices: 
+        - Framework: A CSS-based diagram of the 'virtuous cycle' to explain the core concept interactively.
+        - Pipeline: An interactive CSS-based flowchart where clicking each stage reveals details, making the complex process understandable. Goal: Organize/Explain. Method: HTML/CSS.
+        - 11 Heuristics: An accordion interface to present detailed information on each heuristic without overwhelming the user. Goal: Organize/Inform. Method: HTML/JS Toggle.
+        - Experiment 1 (Case Study): A Chart.js bar chart for human evaluation scores, providing clear quantitative comparison. Goal: Compare/Inform. Method: Chart.js Canvas.
+        - Experiment 2 (Model War): A Chart.js grouped bar chart to compare model self-coherence, visually highlighting the 'Plurality of Commonsense' finding. Goal: Compare. Method: Chart.js Canvas.
+        - Experiment 3 (Prediction): A before/after style visualization to explain the 'Structure Multiplication Factor' (SMF) concept intuitively. Goal: Explain/Inform. Method: HTML/CSS.
+        - Justification: These choices translate abstract concepts and data tables from the report into engaging, interactive visualizations that facilitate understanding, which is superior to static text for a presentation context.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .nav-link { transition: all 0.3s ease; }
+        .nav-link.active { background-color: #E07A5F; color: #FFFFFF; }
+        .nav-link:not(.active):hover { background-color: #F7EFE5; }
+        .sub-nav-link.active { color: #E07A5F; font-weight: 700; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .flowchart-node { transition: all 0.3s ease; }
+        .flowchart-node:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="bg-[#FDFBF6] text-[#3C3633]">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 bg-[#F7EFE5] p-4 md:p-6 sticky top-0 h-screen md:overflow-y-auto shrink-0">
+            <h1 class="text-xl font-bold text-[#E07A5F] mb-6">Polanyi 시스템</h1>
+            <nav id="main-nav" class="space-y-2">
+                <a href="#intro" class="nav-link block font-medium p-3 rounded-lg">0. 소개</a>
+                <a href="#framework" class="nav-link block font-medium p-3 rounded-lg">1. 폴라니 프레임워크</a>
+                <a href="#pipeline" class="nav-link block font-medium p-3 rounded-lg">2. XKG 파이프라인</a>
+                <a href="#heuristics" class="nav-link block font-medium p-3 rounded-lg">3. 11가지 지식 차원</a>
+                <div>
+                    <a href="#experiments" class="nav-link block font-medium p-3 rounded-lg">4. 실험 결과</a>
+                    <div id="sub-nav-experiments" class="pl-4 mt-2 space-y-2 border-l-2 border-[#E07A5F] hidden">
+                        <a href="#exp-case-study" class="sub-nav-link block text-sm p-2">사례 연구</a>
+                        <a href="#exp-model-war" class="sub-nav-link block text-sm p-2">모델들의 전쟁</a>
+                        <a href="#exp-prediction" class="sub-nav-link block text-sm p-2">미래 예측</a>
+                    </div>
+                </div>
+                <a href="#conclusion" class="nav-link block font-medium p-3 rounded-lg">5. 결론</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+            
+            <!-- 0. 소개 Section -->
+            <section id="intro" class="content-section">
+                <h2 class="text-3xl font-bold mb-2">서론: 인간과 같은 이해를 향한 도전</h2>
+                <p class="text-lg text-gray-600 mb-8">AI가 인간처럼 세상을 이해하기 위해 넘어야 할 근본적인 장벽들은 무엇일까요? 이 연구는 바로 그 질문에서 시작합니다.</p>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#81B29A]">
+                        <h3 class="font-bold text-xl mb-3">신호와 기호 사이의 심연</h3>
+                        <p class="text-gray-700">생성형 AI는 통계적 패턴(신호)을 학습하고, 지식 기반 AI는 논리(기호)에 의존합니다. 이 둘 사이의 간극은 '접지(grounding)'의 부재, 즉 AI가 생성한 정보가 현실 세계와 어떻게 연결되는지 모른다는 문제를 낳습니다. 이 연구는 이 심연을 잇는 다리를 제안합니다.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#E07A5F]">
+                        <h3 class="font-bold text-xl mb-3">프레임 문제</h3>
+                        <p class="text-gray-700">AI의 고전적 난제인 프레임 문제는 시스템이 특정 상황에서 어떤 정보가 관련 있고 어떤 정보가 무관한지를 판단하지 못하는 문제입니다. 폴라니 시스템은 '관련성 엔진'처럼 작동하여, 11가지 휴리스틱을 통해 무한한 가능성의 공간을 효과적으로 가지치기합니다.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#F2CC8F]">
+                        <h3 class="font-bold text-xl mb-3">궁극적 목표: GWMs</h3>
+                        <p class="text-gray-700">연구의 최종 목표는 '접지된 세계 모델(Grounded World Models)' 구축입니다. 이는 시스템의 내부 표현이 물리적, 인지적, 사회-문화적 차원을 포함한 인간 경험의 다차원적 현실과 의미 있는 관계를 맺도록 하는 것을 의미합니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 1. 프레임워크 Section -->
+            <section id="framework" class="content-section">
+                <h2 class="text-3xl font-bold mb-2">폴라니 프레임워크</h2>
+                <p class="text-lg text-gray-600 mb-8">LLM을 지식의 원천이 아닌, 암묵적 지식을 추출하기 위한 '잠재적 반응자'로 재정의합니다.</p>
+
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-center mb-6">뉴로심볼릭의 선순환 구조</h3>
+                    <p class="text-center text-gray-600 mb-8">폴라니 시스템은 신경망(LLM)과 기호적 표현(지식 그래프)이 상호작용하며 서로를 강화하는 동적인 루프를 형성합니다. 이 구조는 일회성 지식 생성을 넘어, 시스템이 스스로 진화할 수 있는 가능성을 제시합니다.</p>
+                    
+                    <div class="relative flex flex-col items-center space-y-4 md:space-y-0 md:flex-row md:justify-around md:items-center">
+                        <div class="text-center p-4">
+                            <div class="bg-[#E07A5F] text-white w-24 h-24 rounded-full flex items-center justify-center text-sm font-bold shadow-lg">LLM (생성)</div>
+                            <p class="mt-2 text-xs max-w-[150px]">이미지/텍스트로부터 초기 설명을 생성</p>
+                        </div>
+                        <div class="text-2xl text-[#81B29A] font-bold absolute top-1/2 left-1/4 -translate-y-1/2 hidden md:block">→</div>
+                        <div class="text-2xl text-[#81B29A] font-bold md:hidden">↓</div>
+                        <div class="text-center p-4">
+                            <div class="bg-[#81B29A] text-white w-24 h-24 rounded-full flex items-center justify-center text-sm font-bold shadow-lg">기호화 (KG)</div>
+                            <p class="mt-2 text-xs max-w-[150px]">설명을 논리적 구조를 가진 기본 그래프로 변환</p>
+                        </div>
+                        <div class="text-2xl text-[#E07A5F] font-bold absolute top-1/2 right-1/4 -translate-y-1/2 hidden md:block">→</div>
+                        <div class="text-2xl text-[#E07A5F] font-bold md:hidden">↓</div>
+                        <div class="text-center p-4">
+                            <div class="bg-[#E07A5F] text-white w-24 h-24 rounded-full flex items-center justify-center text-sm font-bold shadow-lg">LLM (강화)</div>
+                            <p class="mt-2 text-xs max-w-[150px]">기본 그래프와 휴리스틱을 통해 암묵적 지식 추론</p>
+                        </div>
+                         <div class="text-2xl text-[#81B29A] font-bold absolute bottom-[-50px] left-1/2 -translate-x-1/2 hidden md:block" style="transform: translateX(-50%) rotate(90deg) translateX(50px);">↺</div>
+                         <div class="text-2xl text-[#81B29A] font-bold md:hidden">↓</div>
+                         <div class="text-center p-4">
+                            <div class="bg-[#81B29A] text-white w-24 h-24 rounded-full flex items-center justify-center text-sm font-bold shadow-lg">XKG (접지)</div>
+                             <p class="mt-2 text-xs max-w-[150px]">강화된 지식으로 더 나은 LLM을 위한 데이터 생성</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 파이프라인 Section -->
+            <section id="pipeline" class="content-section">
+                <h2 class="text-3xl font-bold mb-2">XKG 파이프라인 해부</h2>
+                <p class="text-lg text-gray-600 mb-8">이미지 한 장이 어떻게 풍부한 의미를 담은 지식 그래프로 변환될까요? 각 단계를 클릭하여 자세히 알아보세요.</p>
+                
+                <div class="space-y-4 md:space-y-0 md:flex md:space-x-4 md:items-center md:justify-center">
+                    <div class="flowchart-node bg-white p-4 rounded-lg shadow-md text-center cursor-pointer" data-modal="modal-1">
+                        <div class="text-2xl">🖼️</div>
+                        <div class="font-bold">1. 이미지 입력</div>
+                    </div>
+                    <div class="text-2xl text-gray-400 mx-2 self-center hidden md:block">→</div>
+                    <div class="flowchart-node bg-white p-4 rounded-lg shadow-md text-center cursor-pointer" data-modal="modal-2">
+                         <div class="text-2xl">✍️</div>
+                        <div class="font-bold">2. 설명 생성</div>
+                    </div>
+                    <div class="text-2xl text-gray-400 mx-2 self-center hidden md:block">→</div>
+                    <div class="flowchart-node bg-white p-4 rounded-lg shadow-md text-center cursor-pointer" data-modal="modal-3">
+                         <div class="text-2xl">🕸️</div>
+                        <div class="font-bold">3. 기본 그래프 생성</div>
+                    </div>
+                    <div class="text-2xl text-gray-400 mx-2 self-center hidden md:block">→</div>
+                    <div class="flowchart-node bg-white p-4 rounded-lg shadow-md text-center cursor-pointer" data-modal="modal-4">
+                         <div class="text-2xl">🧠</div>
+                        <div class="font-bold">4. 휴리스틱 강화</div>
+                    </div>
+                    <div class="text-2xl text-gray-400 mx-2 self-center hidden md:block">→</div>
+                     <div class="flowchart-node bg-white p-4 rounded-lg shadow-md text-center cursor-pointer" data-modal="modal-5">
+                         <div class="text-2xl">🌍</div>
+                        <div class="font-bold">5. XKG 완성</div>
+                    </div>
+                </div>
+
+                <!-- Modals -->
+                <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+                    <div id="modal-content" class="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full relative">
+                        <button id="close-modal" class="absolute top-4 right-4 text-2xl font-bold">&times;</button>
+                        <h3 id="modal-title" class="text-2xl font-bold mb-4"></h3>
+                        <p id="modal-body" class="text-gray-700"></p>
+                        <div id="modal-details" class="mt-4 text-sm bg-gray-50 p-4 rounded-lg"></div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- 3. 휴리스틱 Section -->
+            <section id="heuristics" class="content-section">
+                <h2 class="text-3xl font-bold mb-2">암묵적 지식의 11가지 차원</h2>
+                <p class="text-lg text-gray-600 mb-8">인간의 상식과 추론은 여러 계층으로 이루어져 있습니다. 폴라니 시스템은 이를 11가지 휴리스틱으로 나누어 탐색합니다.</p>
+                
+                <div id="accordion-container" class="space-y-3">
+                    <!-- Accordion items will be injected by JS -->
+                </div>
+            </section>
+
+            <!-- 4. 실험 결과 Section -->
+            <section id="experiments" class="content-section">
+                <!-- Sub-section content will be injected here -->
+            </section>
+            
+            <div id="exp-case-study-content" class="hidden">
+                <h2 class="text-3xl font-bold mb-2">실험 1: 올림픽 우승 사례 연구</h2>
+                <p class="text-lg text-gray-600 mb-8">최근 올림픽 우승자 이미지를 사용하여 파이프라인의 실제 성능을 검증합니다. 생성된 지식이 인간에게 얼마나 타당하게 받아들여지는지 평가했습니다.</p>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold text-center mb-4">휴리스틱별 인간 평가 타당성 점수 (5점 만점)</h3>
+                    <div class="chart-container">
+                        <canvas id="humanEvalChart"></canvas>
+                    </div>
+                    <p class="text-sm text-center text-gray-500 mt-4">'사실적 영향'과 같이 구체적인 개념은 높은 점수를 받은 반면, '암시된 미래 사건'처럼 불확실성이 큰 개념은 낮은 점수를 받았습니다. 이는 시스템의 실패 양상이 인간의 인지적 한계와 유사함을 시사합니다.</p>
+                </div>
+            </div>
+
+            <div id="exp-model-war-content" class="hidden">
+                <h2 class="text-3xl font-bold mb-2">실험 2: 모델들의 전쟁</h2>
+                <p class="text-lg text-gray-600 mb-8">서로 다른 LLM들이 같은 문제에 대해 얼마나 일관된 '상식'을 보여줄까요?</p>
+                <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                    <h3 class="text-xl font-bold text-center mb-4">LLM 자기 일관성 및 생성량 비교</h3>
+                     <div class="chart-container">
+                        <canvas id="modelWarChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-[#F7EFE5] p-6 rounded-xl border-l-4 border-[#E07A5F]">
+                    <h3 class="font-bold text-xl mb-3">핵심 발견: 상식의 다원성</h3>
+                    <p class="text-gray-700">가장 충격적인 결과는 모델 간 동의도가 극히 낮다는 것입니다. 이는 각 LLM이 자신만의 '상식 버전' 또는 '세계관'을 학습했음을 의미합니다. 우리는 단일한 AI가 아닌, 다원적인 '기계 마음'을 개발하고 있을 수 있습니다.</p>
+                </div>
+            </div>
+
+            <div id="exp-prediction-content" class="hidden">
+                 <h2 class="text-3xl font-bold mb-2">실험 3: 미래 사건 예측</h2>
+                 <p class="text-lg text-gray-600 mb-8">뉴로심볼릭 접근법이 실제 다운스트림 작업에서 얼마나 유용한지 검증합니다.</p>
+                 <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="font-bold text-xl mb-3 text-center">구조는 의미의 증식기 (Structure is a Meaning Multiplier)</h3>
+                    <p class="text-center text-gray-600 mb-8">XKG 파이프라인은 단순 텍스트 예측을 넘어, 행위자, 원인, 관계 등을 포함하는 구조화된 지식을 생성하여 정보의 가치를 증폭시킵니다.</p>
+
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div class="text-center border-r pr-8">
+                            <h4 class="font-semibold text-lg mb-2">일반 LLM 출력 (텍스트)</h4>
+                            <ul class="text-left list-disc list-inside bg-gray-50 p-4 rounded-lg">
+                                <li>법적 분쟁 가능성</li>
+                                <li>정책에 대한 대중의 반발</li>
+                                <li>국제적 긴장 고조</li>
+                            </ul>
+                        </div>
+
+                        <div class="text-center">
+                            <h4 class="font-semibold text-lg mb-2">XKG 출력 (구조화된 지식)</h4>
+                             <div class="text-left bg-blue-50 p-4 rounded-lg text-sm font-mono">
+                                <p><span class="text-purple-600">ex:LegalDispute</span> a <span class="text-green-600">ex:FutureEvent</span> ;</p>
+                                <p class="ml-2"><span class="text-red-600">ex:hasActor</span> <span class="text-blue-600">ex:CivilRightsGroup</span> ;</p>
+                                <p class="ml-2"><span class="text-red-600">ex:causedBy</span> <span class="text-blue-600">ex:NewPolicy</span> .</p>
+                                <p><span class="text-purple-600">ex:PublicBacklash</span> a <span class="text-green-600">ex:FutureEvent</span> .</p>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="mt-8 text-center">
+                        <div class="inline-block bg-[#81B29A] text-white font-bold py-3 px-6 rounded-full text-2xl">
+                            SMF: 2.74x
+                        </div>
+                         <p class="mt-2 text-gray-600">평균적으로 2.74배 더 많은 구조화된 정보를 제공합니다.</p>
+                    </div>
+                 </div>
+            </div>
+
+
+            <!-- 5. 결론 Section -->
+            <section id="conclusion" class="content-section">
+                <h2 class="text-3xl font-bold mb-2">통찰과 함의</h2>
+                <p class="text-lg text-gray-600 mb-8">이 연구는 인간과 같은 추론 시스템을 향한 여정에 중요한 이정표를 제시합니다.</p>
+                
+                <div class="bg-white p-8 rounded-xl shadow-lg mb-8">
+                    <h3 class="text-2xl font-bold mb-6">핵심 기여</h3>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div>
+                            <div class="text-2xl mb-2">🚀</div>
+                            <h4 class="font-bold">효과적인 파이프라인</h4>
+                            <p>암묵적 지식을 추출하고 형식화하는 재현 가능한 뉴로심볼릭 파이프라인을 제시했습니다.</p>
+                        </div>
+                         <div>
+                            <div class="text-2xl mb-2">🤔</div>
+                            <h4 class="font-bold">상식의 다원성</h4>
+                            <p>LLM들이 각자 다른 '상식'을 가지고 있음을 발견하여, AI의 신뢰성 연구에 새로운 과제를 제기했습니다.</p>
+                        </div>
+                         <div>
+                            <div class="text-2xl mb-2">📈</div>
+                            <h4 class="font-bold">구조의 가치 증명</h4>
+                            <p>SMF 지표를 통해 구조화된 지식이 단순 텍스트보다 실용적으로 더 우수함을 정량적으로 보였습니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl font-bold mb-4">향후 연구 방향</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>각 휴리스틱에 특화된 프롬프트 정교화</li>
+                        <li>더 구체적이고 전문화된 온톨로지 속성 도입</li>
+                        <li>생성된 지식을 이미지의 특정 영역과 연결하는 '주제화'</li>
+                        <li>더 작고 효율적인 오픈소스 모델 지원 확대</li>
+                        <li>사용자가 직접 휴리스틱을 정의할 수 있는 커스터마이징 기능</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainNavLinks = document.querySelectorAll('#main-nav > a, #main-nav > div > a');
+            const subNavLinks = document.querySelectorAll('.sub-nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+            const experimentsSubNav = document.getElementById('sub-nav-experiments');
+            const experimentsSection = document.getElementById('experiments');
+
+            const modalData = {
+                "modal-1": {
+                    title: "1. 이미지 입력 (Multimodal Input)",
+                    body: "프로세스는 하나의 이미지(또는 텍스트)에서 시작됩니다. 이 연구에서는 의도적으로 최신 사건의 이미지를 선택하여, 모델이 사전 학습 데이터에서 이미지를 '암기'했을 가능성을 배제했습니다.",
+                    details: "<strong>사용 모델:</strong> N/A (입력 단계)"
+                },
+                "modal-2": {
+                    title: "2. 설명 생성 (MLLM Description)",
+                    body: "멀티모달 LLM이 이미지의 외현적, 암묵적, 상징적 내용을 포괄하는 간결한 자연어 설명을 생성합니다. 이 텍스트의 품질이 전체 파이프라인의 성능을 좌우합니다.",
+                    details: "<strong>사용 모델:</strong> GPT-4o"
+                },
+                "modal-3": {
+                    title: "3. 기본 그래프 생성 (Base Graph Generation)",
+                    body: "생성된 텍스트는 'Text2AMR2FRED'라는 복합 파이프라인을 거쳐 형식적인 OWL/RDF 지식 그래프로 변환됩니다. 이 과정에서 의미 파싱, 개체 연결, 단어 의미 중의성 해소 등 복잡한 작업이 수행됩니다.",
+                    details: "<strong>주요 도구:</strong> SPRING(AMR 파싱), BLINK(개체 연결), AMR2FRED(KG 변환), eWiSeR(WSD), Framester(온톨로지 허브)"
+                },
+                 "modal-4": {
+                    title: "4. 휴리스틱 강화 (Heuristic Enrichment)",
+                    body: "생성된 기본 그래프는 11가지의 각기 다른 휴리스틱 프롬프트와 함께 다시 LLM에 주입됩니다. LLM은 그래프의 맥락을 기반으로 특정 유형의 암묵적 지식을 추론하여 새로운 트리플(지식 조각)을 생성합니다.",
+                    details: "<strong>사용 모델:</strong> Claude 3.5 Sonnet (최고 성능)"
+                },
+                 "modal-5": {
+                    title: "5. XKG 완성 (Extended Knowledge Graph)",
+                    body: "기본 그래프와 11개 휴리스틱으로부터 생성된 모든 트리플이 병합되어 최종 산출물인 확장된 지식 그래프(XKG)가 완성됩니다. 이는 특정 맥락에 대한 '접지된 세계 모델'의 스냅샷입니다.",
+                    details: "<strong>산출물:</strong> 논리적으로 검증 가능하고 풍부한 의미를 담은 지식 그래프"
+                },
+            };
+
+            const heuristicsData = [
+                { title: '전제', content: '어떤 진술이 의미를 갖기 위해 반드시 참이어야 하는 암묵적인 가정입니다. "운동선수가 금메달을 땄다"는 "경기가 있었다"는 사실을 전제합니다.' },
+                { title: '대화 함의', content: '발화의 문자적 의미를 넘어 대화의 맥락에서 발생하는 암시된 의미입니다. "근처에 주유소 있나요?"라는 질문에 대한 "모퉁이를 돌면 있어요"라는 답은 그 주유소가 영업 중이라는 것을 함의합니다.' },
+                { title: '사실적 영향', content: '사건이 참여자에게 미치는 물리적, 사회적, 인지적 결과입니다. "경기에서 우승"한 선수는 \'기쁨\'이나 \'자부심\'을 느낄 것입니다.' },
+                { title: '이미지 스키마', content: '세상 경험을 조직하는 기본적인 인지 구조입니다. (예: 용기, 경로, 균형) "경기장"은 선수들을 담는 \'용기(Container)\' 스키마로 해석될 수 있습니다.' },
+                { title: '환유적 강제', content: '단어의 일반적 의미가 문맥 속에서 관련된 특정 의미로 강제 해석되는 현상입니다. "백악관이 발표했다"에서 \'백악관\'은 건물이 아니라 \'미국 정부\'를 의미합니다.' },
+                { title: '도덕적 가치 기반 강제', content: '행동이나 진술이 도덕적, 사회적 해석으로 강제되는 현상입니다. 우승한 선수의 행동은 \'헌신\'과 \'노력\'이라는 가치를 구현한 것으로 해석됩니다.' },
+                { title: '상징적 강제', content: '문자적 의미가 상징적 해석으로 변환되는 과정입니다. 선수의 유니폼에 있는 국기는 \'국가적 자부심\'을 상징합니다.' },
+                { title: '사건 순서', content: '텍스트에 언급된 사건들 사이의 시간적 선후 관계를 포착합니다. \'경기 → 우승 → 축하\'와 같은 순서가 추론될 수 있습니다.' },
+                { title: '인과 관계', content: '사건이나 상태 간의 원인-결과 관계를 포착합니다. \'수년간의 훈련\'이 \'우승\'의 원인으로 추론될 수 있습니다.' },
+                { title: '암시된 미래 사건', content: '주어진 정보를 바탕으로 발생 가능성이 높은 미래 사건을 추론합니다. 금메달 우승자는 \'광고 계약\'이나 \'인터뷰 요청\'을 받을 가능성이 높습니다.' },
+                { title: '암시된 잠재적 비사건', content: '일어나지 않았지만 일어날 수도 있었던 사건(반사실)을 추론합니다. 우승자에게는 \'경기에서 지는 것\'이 잠재적 비사건이었습니다.' },
+            ];
+
+            const accordionContainer = document.getElementById('accordion-container');
+            heuristicsData.forEach((item, index) => {
+                const accordionItem = document.createElement('div');
+                accordionItem.className = 'border border-gray-200 rounded-lg bg-white';
+                accordionItem.innerHTML = `
+                    <button class="accordion-toggle w-full flex justify-between items-center p-4 text-left font-semibold">
+                        <span>${index + 1}. ${item.title}</span>
+                        <span class="transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content px-4 pb-4 text-gray-600">
+                        <p>${item.content}</p>
+                    </div>
+                `;
+                accordionContainer.appendChild(accordionItem);
+            });
+            
+            document.querySelectorAll('.accordion-toggle').forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const icon = button.querySelector('span:last-child');
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+                        document.querySelectorAll('.accordion-toggle span:last-child').forEach(i => i.style.transform = 'rotate(0deg)');
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+
+
+            let humanEvalChartInstance = null;
+            let modelWarChartInstance = null;
+
+            function destroyCharts() {
+                if (humanEvalChartInstance) {
+                    humanEvalChartInstance.destroy();
+                    humanEvalChartInstance = null;
+                }
+                if (modelWarChartInstance) {
+                    modelWarChartInstance.destroy();
+                    modelWarChartInstance = null;
+                }
+            }
+            
+            function renderHumanEvalChart() {
+                const ctx = document.getElementById('humanEvalChart').getContext('2d');
+                const data = {
+                    labels: ['사실적 영향', '대화 함의', '도덕적 가치', '전제', '상징적 강제', '인과 관계', '사건 순서', '이미지 스키마', '환유적 강제', '잠재적 비사건', '미래 사건'],
+                    datasets: [{
+                        label: '평균 타당성 점수',
+                        data: [4.32, 4.31, 4.29, 4.18, 3.80, 3.72, 3.70, 3.64, 3.61, 3.61, 2.94],
+                        backgroundColor: '#81B29A',
+                        borderColor: '#6A9983',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                };
+                humanEvalChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, max: 5 } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+            
+            function renderModelWarChart() {
+                const ctx = document.getElementById('modelWarChart').getContext('2d');
+                const data = {
+                    labels: ['Claude 3.5 Sonnet', 'GPT-4o', 'Mistral Large 2'],
+                    datasets: [
+                        {
+                            label: '자기 일관성 점수 (평균)',
+                            data: [0.85, 0.55, 0.82],
+                            backgroundColor: '#E07A5F',
+                            borderColor: '#C76A50',
+                            borderWidth: 1,
+                            borderRadius: 5,
+                        },
+                        {
+                            label: '생성 트리플 수 (전제)',
+                            data: [35, 25, 105],
+                            backgroundColor: '#81B29A',
+                            borderColor: '#6A9983',
+                            borderWidth: 1,
+                             borderRadius: 5,
+                        }
+                    ]
+                };
+                modelWarChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } },
+                        plugins: { legend: { position: 'top' } }
+                    }
+                });
+            }
+
+            function showSection(hash) {
+                destroyCharts();
+                contentSections.forEach(section => section.classList.remove('active'));
+                
+                let activeSectionId = hash.substring(1);
+                let isSubNav = false;
+                
+                if (activeSectionId.startsWith('exp-')) {
+                   activeSectionId = 'experiments';
+                   isSubNav = true;
+                }
+
+                const activeSection = document.getElementById(activeSectionId);
+                if (activeSection) {
+                    activeSection.classList.add('active');
+                }
+
+                mainNavLinks.forEach(link => {
+                    if (link.getAttribute('href') === '#' + activeSectionId) {
+                        link.classList.add('active');
+                         if (activeSectionId === 'experiments') {
+                            experimentsSubNav.classList.remove('hidden');
+                        } else {
+                            experimentsSubNav.classList.add('hidden');
+                        }
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                
+                if(activeSectionId !== 'experiments') {
+                     experimentsSubNav.classList.add('hidden');
+                }
+                
+                subNavLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (isSubNav && link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                    }
+                });
+
+                if (isSubNav) {
+                    const contentToShow = document.getElementById(hash.substring(1) + '-content').innerHTML;
+                    experimentsSection.innerHTML = contentToShow;
+                    if(hash === '#exp-case-study') renderHumanEvalChart();
+                    if(hash === '#exp-model-war') renderModelWarChart();
+                } else if(hash === '#experiments') {
+                    // Default to case study if experiments main is clicked
+                    document.querySelector('.sub-nav-link[href="#exp-case-study"]').click();
+                }
+
+                if(hash === '#intro') {
+                   document.getElementById('intro').classList.add('active');
+                }
+            }
+            
+            document.querySelectorAll('.nav-link, .sub-nav-link').forEach(link => {
+                 link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const hash = this.getAttribute('href');
+                    history.pushState(null, null, hash);
+                    showSection(hash);
+                });
+            });
+            
+            // Handle browser back/forward
+            window.addEventListener('popstate', () => {
+                showSection(location.hash || '#intro');
+            });
+            
+            // Initial load
+            showSection(location.hash || '#intro');
+
+            // Modal logic
+            const modalContainer = document.getElementById('modal-container');
+            const modalContent = document.getElementById('modal-content');
+            const closeModal = document.getElementById('close-modal');
+            
+            document.querySelectorAll('.flowchart-node').forEach(node => {
+                node.addEventListener('click', () => {
+                    const modalId = node.dataset.modal;
+                    const data = modalData[modalId];
+                    if (data) {
+                        document.getElementById('modal-title').textContent = data.title;
+                        document.getElementById('modal-body').textContent = data.body;
+                        document.getElementById('modal-details').innerHTML = data.details;
+                        modalContainer.classList.remove('hidden');
+                    }
+                });
+            });
+            
+            closeModal.addEventListener('click', () => {
+                modalContainer.classList.add('hidden');
+            });
+            
+            modalContainer.addEventListener('click', (e) => {
+                if(e.target === modalContainer) {
+                    modalContainer.classList.add('hidden');
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>
